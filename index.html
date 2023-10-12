@@ -1,0 +1,70 @@
+<html>
+    <button id="request">Request Ports</button>
+    <br />
+    m0: <input id="m0" type="range" min="10" max="30" value="20"/> <span>20</span><br />
+    m1: <input id="m1" type="range" min="0" max="180" value="0"/> <span>0</span><br />
+    m2: <input id="m2" type="range" min="15" max="165" value="15"/> <span>15</span><br />
+    m3: <input id="m3" type="range" min="0" max="180" value="180"/> <span>180</span><br />
+    m4: <input id="m4" type="range" min="0" max="180" value="170"/> <span>170</span><br />
+    m5: <input id="m5" type="range" min="0" max="180" value="0"/> <span>0</span><br />
+    m6: <input id="m6" type="range" min="10" max="73" value="73"/> <span>73</span><br />
+    <script>
+navigator.serial.addEventListener('connect', (e) => {
+    console.log("connect", e);
+  // Connect to `e.target` or add it to a list of available ports.
+
+  navigator.serial.getPorts().then((ports) => {
+    console.log("ports", ports)
+    // Initialize the list of available ports with `ports` on page load.
+  });
+});
+
+navigator.serial.addEventListener('disconnect', (e) => {
+    console.log("disconnect", e);
+  // Remove `e.target` from the list of available ports.
+});
+
+let writer = null;
+document.querySelector("#request").addEventListener('click', () => {
+  const usbVendorId = 0xABCD;
+  navigator.serial.requestPort({
+    filters: [] // [{ usbVendorId }]
+  }).then(async (port) => {
+    // Connect to `port` or add it to the list of available ports.
+    console.log({port});
+
+    // Wait for the serial port to open.
+    await port.open({ baudRate: 9600 });
+    console.log("port open");
+
+
+    // const writer = port.writable.getWriter();
+    const textEncoder = new TextEncoderStream();
+    const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+    writer = textEncoder.writable.getWriter();
+  }).catch((e) => {
+    // The user didn't select a port.
+    console.log({event: e});
+  });
+});
+
+const delay = async (ms) => {
+    const pr = new Promise((res, rej) => {
+        console.log("*");
+        setTimeout(res, ms);
+    });
+    return pr;
+};
+
+for (let i=0; i<=6; i++) {
+    document.querySelector(`#m${i}`).addEventListener('change', async (e) => {
+        const val = e.target.value;
+        await writer.write(`m${i} ${val}`);
+        document
+            .querySelector(`#m${i}`)
+            .nextElementSibling
+            .innerText = val;
+    });
+}
+    </script>
+</html>

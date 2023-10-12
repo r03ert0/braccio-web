@@ -1,0 +1,13 @@
+{
+  "name": "web-braccio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "https.conf.js",
+  "scripts": {
+    "start": "live-server --https=https.conf.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
